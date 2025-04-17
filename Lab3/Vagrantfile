@@ -1,0 +1,52 @@
+
+private_network_config = {
+  "HostA" => { ip: "10.0.10.2", nic_type: "virtio", network: "VMnet2" },
+  "HostB" => { ip: "10.0.30.2", nic_type: "virtio", network: "VMnet4" },
+  "R1" => [
+    { ip: "10.0.10.1", network: "VMnet2" },
+    { ip: "10.0.20.1", network: "VMnet3" }
+  ],
+  "R2" => [
+    { ip: "10.0.20.2", network: "VMnet3" },
+    { ip: "10.0.30.1", network: "VMnet4" }
+  ]
+}
+
+def setup_vm(vm, box, hostname, networks)
+  vm.vm.box = box
+  vm.vm.hostname = hostname
+  networks.each do |net|
+    vm.vm.network "private_network", ip: net[:ip], virtualbox__intnet: net[:network], auto_config: true, nic_type: net[:nic_type]
+  end
+  vm.vm.provider "vmware_desktop" do |v|
+    v.gui = true
+    v.memory = 1024
+    v.cpus = 1
+  end
+  
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.define "HostA" do |desktop2|
+    setup_vm(desktop2, "gusztavvargadr/ubuntu-desktop-2004-lts", "HostA", [{ip: "10.0.10.2", network: "VMnet2", nic_type: "virtio"}])
+  end
+
+  config.vm.define "HostB" do |desktop3|
+    setup_vm(desktop3, "gusztavvargadr/ubuntu-desktop-2004-lts", "HostB", [{ip: "10.0.30.2", network: "VMnet4", nic_type: "virtio"}])
+  end
+
+  config.vm.define "R1" do |r1|
+    setup_vm(r1, "gusztavvargadr/ubuntu-server-2004-lts", "R1", [
+      {ip: "10.0.10.1", network: "VMnet2", nic_type: "virtio"},
+      {ip: "10.0.20.1", network: "VMnet3", nic_type: "virtio"}
+    ])
+    r1.vm.synced_folder "./shared", "/home/vagrant/testR1", create: true
+  end
+
+  config.vm.define "R2" do |r2|
+    setup_vm(r2, "gusztavvargadr/ubuntu-server-2004-lts", "R2", [
+      {ip: "10.0.20.2", network: "VMnet3", nic_type: "virtio"},
+      {ip: "10.0.30.1", network: "VMnet4", nic_type: "virtio"}
+    ])
+  end
+end

@@ -1,0 +1,24 @@
+- name: Verify network connectivity dynamically
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ping other hosts
+      loop:
+        - { target: "10.0.10.2", name: "HostA" }
+        - { target: "10.0.30.2", name: "HostB" }
+        - { target: "10.0.10.1", name: "R1 eth1" }
+        - { target: "10.0.20.2", name: "R2 eth1" }
+        - { target: "10.0.20.1", name: "R1 eth2" }
+        - { target: "10.0.30.1", name: "R2 eth2" }
+      shell: ping -c 2 {{ item.target }}
+      changed_when: false
+      ignore_errors: yes
+      register: ping_result
+
+    - name: Log ping results
+      debug:
+        msg: >
+          Ping to {{ item.item.name }} ({{ item.item.target }})
+          {{ 'succeeded' if item.rc == 0 else 'failed' }}
+      with_items: "{{ ping_result.results }}"
+
