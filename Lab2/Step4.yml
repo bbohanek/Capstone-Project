@@ -1,0 +1,75 @@
+---
+- name: Configure all VMs
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Add default route for HostA
+      when: inventory_hostname == 'HostA'
+      shell: sudo ip route add default via 10.0.10.1
+
+    - name: Add default route for HostB
+      when: inventory_hostname == 'HostB'
+      shell: sudo ip route add default via 10.0.30.1
+
+    - name: Add routes for R1
+      when: inventory_hostname == 'R1'
+      shell: sudo ip route add 10.0.30.0/24 via 10.0.20.2 dev eth2
+
+    - name: Add routes for R2
+      when: inventory_hostname == 'R2'
+      shell: sudo ip route add 10.0.10.0/24 via 10.0.20.1 dev eth1
+
+- name: Enable IP forwarding on R1 and R2
+  hosts: R1,R2
+  become: yes
+  tasks:
+    - name: Ensure IP forwarding is enabled on boot
+      lineinfile:
+        path: /etc/sysctl.conf
+        regexp: '^net.ipv4.ip_forward='
+        line: 'net.ipv4.ip_forward=1'
+        state: present
+
+    - name: Apply sysctl changes
+      shell: |
+        sysctl -p
+
+- name: Check connectivity between VMs
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ping HostA from all VMs
+      shell: ping -c 2 10.0.10.2
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping HostB from all VMs
+      shell: ping -c 2 10.0.30.2
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping R1 eth1 from all VMs
+      shell: ping -c 2 10.0.10.1
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping R1 eth2 from all VMs
+      shell: ping -c 2 10.0.10.1
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping R2 eth1 from all VMs
+      shell: ping -c 2 10.0.20.2
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping R2 eth2 from all VMs
+      shell: ping -c 2 10.0.30.1
+      ignore_errors: yes
+      changed_when: false
+
