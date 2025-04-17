@@ -1,0 +1,58 @@
+Vagrant.configure("2") do |config|
+  
+  config.vm.define "HostA-5" do |desktop2|
+    desktop2.vm.box = "gusztavvargadr/ubuntu-desktop-2004-lts"
+    desktop2.vm.hostname = "HostA"
+    desktop2.vm.network "private_network", ip: "10.0.10.2", virtualbox__intnet: "VMnet2", auto_config: true, nic_type: "virtio"
+    desktop2.vm.provider "vmware_desktop" do |v|
+      v.gui = true
+      v.memory = 1024
+      v.cpus = 1
+    end
+  end
+
+ 
+  config.vm.define "HostB-5" do |desktop3|
+    desktop3.vm.box = "gusztavvargadr/ubuntu-desktop-2004-lts"
+    desktop3.vm.hostname = "HostB"
+    desktop3.vm.network "private_network", ip: "10.0.30.2", virtualbox__intnet: "VMnet4", auto_config: true, nic_type: "virtio"
+    desktop3.vm.provider "vmware_desktop" do |v|
+      v.gui = true
+      v.memory = 1024
+      v.cpus = 1
+    end
+ 
+  end
+
+  
+  config.vm.define "R1-5" do |r1|
+    r1.vm.box = "gusztavvargadr/ubuntu-server-2004-lts"
+    r1.vm.hostname = "R1"
+    r1.vm.network "private_network", ip: "10.0.10.1", virtualbox__intnet: "VMnet2", auto_config: true, nic_type: "virtio"
+    r1.vm.network "private_network", ip: "10.0.20.1", virtualbox__intnet: "VMnet3", auto_config: true, nic_type: "virtio"
+    r1.vm.provider "vmware_desktop" do |v|
+      v.gui = true
+      v.memory = 1024
+      v.cpus = 1
+    end
+  end
+
+  
+  config.vm.define "R2-5" do |r2|
+    r2.vm.box = "gusztavvargadr/ubuntu-server-2004-lts"
+    r2.vm.hostname = "R2"
+    r2.vm.network "private_network", ip: "10.0.20.2", virtualbox__intnet: "VMnet3", auto_config: true, nic_type: "virtio"
+    r2.vm.network "private_network", ip: "10.0.30.1", virtualbox__intnet: "VMnet4", auto_config: true, nic_type: "virtio"
+    r2.vm.provider "vmware_desktop" do |v|
+      v.gui = true
+      v.memory = 1024
+      v.cpus = 1
+    end
+  end
+
+  config.vm.provision "ansible" do |ansible| 
+    ansible.playbook = "Step4.yml"
+  end
+
+
+end

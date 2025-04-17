@@ -1,0 +1,14 @@
+---
+- name: Install nginx
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Update apt package index
+      apt:
+        update_cache: yes
+
+    - name: Install nginx
+      apt: 
+        name: nginx
+        state: present

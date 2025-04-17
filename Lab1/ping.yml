@@ -1,0 +1,36 @@
+- name: Check connectivity between VMs
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Ping HostA from all VMs
+      shell: ping -c 2 10.0.10.2
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping HostB from all VMs
+      shell: ping -c 2 10.0.30.2
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping R1 eth1 from all VMs
+      shell: ping -c 2 10.0.10.1
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping R1 eth2 from all VMs
+      shell: ping -c 2 10.0.10.1
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Ping R2 eth1 from all VMs
+      shell: ping -c 2 10.0.20.2
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Ping R2 eth2 from all VMs
+      shell: ping -c 2 10.0.30.1
+      ignore_errors: yes
+      changed_when: false
+
+

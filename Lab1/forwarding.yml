@@ -1,0 +1,16 @@
+- name: Enable IP forwarding on R1 and R2
+  hosts: R1,R2
+  become: yes
+  tasks:
+
+    - name: Ensure IP forwarding is enabled on boot
+      lineinfile:
+        path: /etc/sysctl.conf
+        regexp: '^net.ipv4.ip_forward='
+        line: 'net.ipv4.ip_forward=1'
+        state: present
+
+    - name: Apply sysctl changes
+      shell: |
+        sysctl -p
+
